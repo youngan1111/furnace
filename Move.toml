@@ -3,7 +3,7 @@ name = "QVE_Protocol"
 version = "0.0.1"
 
 [addresses]
-qve_protocol = "6cc52fd1e87c858c663773c49718ab4704c20000d86895e48f4f5620eb77e4f2"
+qve_protocol = "77743d6b1f4222f7768914c915304e5a3c4ac55851cb7d5d8dc0f1fdd7d0bbf9"
 
 [dependencies.Liquidswap]
 git = 'https://github.com/pontem-network/liquidswap.git'
