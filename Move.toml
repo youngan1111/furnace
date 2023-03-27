@@ -1,0 +1,24 @@
+[package]
+name = "HelloBlockchain"
+version = "0.0.1"
+
+[addresses]
+hello_blockchain = "8a354ea36fc56e0e34fa8193cb7a3b48e01c2f5547bf5ce86c9fb75bf7b29a91"
+
+[dependencies.Liquidswap]
+git = 'https://github.com/pontem-network/liquidswap.git'
+rev = "v0.4.4"
+
+[dependencies.LiquidswapRouterV2]
+git = 'https://github.com/pontem-network/liquidswap.git'
+subdir = 'liquidswap_router_v2/'
+rev = "v0.4.4"
+
+[dependencies.LiquidswapLP]
+git = 'https://github.com/pontem-network/liquidswap.git'
+subdir = 'liquidswap_lp/'
+rev = "v0.4.4"
+
+[dependencies.TestCoins]
+git = 'https://github.com/pontem-network/test-coins.git'
+rev = "v0.1.1"
