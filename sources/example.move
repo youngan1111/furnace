@@ -1,4 +1,4 @@
-module hello_blockchain::example {
+module qve_protocol::example {
     use std::signer;
 
     use liquidswap::curves::Stable;
@@ -12,7 +12,7 @@ module hello_blockchain::example {
     use aptos_framework::aptos_coin::AptosCoin;
     use aptos_framework::coin;
 
-    use hello_blockchain::usdf::USDF;
+    use qve_protocol::usdf::USDF;
 
     public entry fun create_stable_pool(account: &signer) {
         // Check generics sorted.

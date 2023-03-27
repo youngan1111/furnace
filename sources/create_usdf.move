@@ -1,5 +1,5 @@
-// Module defining the CoinType for hello_blockchain's test coins.
-module hello_blockchain::usdf {
+// Module defining the CoinType for qve_protocol's test coins.
+module qve_protocol::usdf {
     use aptos_framework::coin;
     use aptos_framework::coin::{BurnCapability, MintCapability, FreezeCapability};
     use std::string;
@@ -19,7 +19,7 @@ module hello_blockchain::usdf {
     }
 
     public entry fun create_usdf(owner: &signer) {
-        assert!(signer::address_of(owner) == @hello_blockchain, ERR_NOT_ADMIN);
+        assert!(signer::address_of(owner) == @qve_protocol, ERR_NOT_ADMIN);
         let (
             burn,
             freeze,
@@ -39,7 +39,7 @@ module hello_blockchain::usdf {
     }
 
     public entry fun mint_usdf(dest: &signer, amt: u64) acquires USDFCap {
-        let cap = borrow_global_mut<USDFCap>(@hello_blockchain);
+        let cap = borrow_global_mut<USDFCap>(@qve_protocol);
         let minted = coin::mint(amt, &cap.mint);
         coin::deposit(address_of(dest), minted);
     }

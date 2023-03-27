@@ -1,4 +1,4 @@
-module hello_blockchain::universal_coin {
+module qve_protocol::universal_coin {
     use std::signer;
     use std::string::utf8;
 

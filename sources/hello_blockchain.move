@@ -1,4 +1,4 @@
-module hello_blockchain::message {
+module qve_protocol::message {
     use std::error;
     use std::signer;
     use std::string;

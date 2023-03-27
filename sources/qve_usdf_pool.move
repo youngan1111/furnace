@@ -1,4 +1,4 @@
-module hello_blockchain::qve_usdf_pool {
+module qve_protocol::qve_usdf_pool {
     use std::signer;
 
     use liquidswap::coin_helper::is_sorted;
@@ -8,8 +8,8 @@ module hello_blockchain::qve_usdf_pool {
 
     use aptos_framework::coin;
 
-    use hello_blockchain::qve::QVE;
-    use hello_blockchain::usdf::USDF;
+    use qve_protocol::qve::QVE;
+    use qve_protocol::usdf::USDF;
 
     public entry fun create_pool(account: &signer) {
         // Check generics sorted.

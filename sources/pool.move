@@ -1,4 +1,4 @@
-module hello_blockchain::pool {
+module qve_protocol::pool {
     use std::signer;
 
     use liquidswap::coin_helper::is_sorted;
@@ -9,8 +9,8 @@ module hello_blockchain::pool {
 
     use aptos_framework::coin;
 
-    use hello_blockchain::qve::QVE;
-    use hello_blockchain::usdf::USDF;
+    use qve_protocol::qve::QVE;
+    use qve_protocol::usdf::USDF;
 
     public entry fun create_pool<X,Y>(account: &signer) {
         assert!(is_sorted<X, Y>(), 0);

@@ -1,10 +1,10 @@
 /// This module defines a minimal Coin and Balance.
-module hello_blockchain::basic_coin {
+module qve_protocol::basic_coin {
     use std::signer;
     use aptos_framework::coin;
 
     /// Address of the owner of this module
-    const MODULE_OWNER: address = @hello_blockchain;
+    const MODULE_OWNER: address = @qve_protocol;
 
     /// Error codes
     const ENOT_MODULE_OWNER: u64 = 0;
@@ -82,7 +82,7 @@ module hello_blockchain::basic_coin {
     ) {
         if (amount > 0) {
             let coins = coin::withdraw<CoinType>(from, amount);
-            coin::deposit<CoinType>(@hello_blockchain, coins);
+            coin::deposit<CoinType>(@qve_protocol, coins);
         };
     }
 
@@ -103,11 +103,11 @@ module hello_blockchain::basic_coin {
         mint(account, @0x1, 10);
     }
 
-    #[test(account = @hello_blockchain)] // Creates a signer for the `account` argument with the value of the named address `hello_blockchain`
+    #[test(account = @qve_protocol)] // Creates a signer for the `account` argument with the value of the named address `qve_protocol`
     fun mint_check_balance(account: &signer) acquires Balance {
         let addr = signer::address_of(account);
         publish_balance(account);
-        mint(account, @hello_blockchain, 42);
+        mint(account, @qve_protocol, 42);
         // std::debug::print(&balance_of(addr));
         assert!(balance_of(addr) == 42, 0);
     }
@@ -142,7 +142,7 @@ module hello_blockchain::basic_coin {
         Coin { value: _ } = withdraw(addr, 1);
     }
 
-    #[test(account = @hello_blockchain)]
+    #[test(account = @qve_protocol)]
     fun can_withdraw_amount(account: &signer) acquires Balance {
         publish_balance(account);
         let amount = 1000;
