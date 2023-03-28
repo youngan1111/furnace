@@ -1,4 +1,4 @@
-module qve_protocol::universal_coin {
+module qve_protocol::coins {
     use std::signer;
     use std::string::utf8;
 
