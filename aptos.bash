@@ -1,4 +1,4 @@
-export set MODULE=0x77743d6b1f4222f7768914c915304e5a3c4ac55851cb7d5d8dc0f1fdd7d0bbf9
+export set MODULE=0x7d6bcd5415b9968276b04654a8e286762bbf4f40fe66d9569b221e61d3021af0
 export set USER=0xb44a3ed8bff3901819a49dd22ebfa760e75561ba3b4e636639d1f74ffad7dea3
 export set PETRA=0xf763fe2af78283f67909c9424ecbda781e106011777e7b92561972f33edf0c3a
 
@@ -59,20 +59,26 @@ aptos move run \
 
 # 코인 한번에 register
 aptos move run \
-  --function-id $MODULE::universal_coin::register_coins \
+  --function-id $MODULE::coins::register_coins \
   --profile testnet5
 # 코인 개별 유저 지갑에 등록 QVE, mQVE, aQVE, USDC, USDT
 aptos move run \
   --function-id 0x1::managed_coin::register \
-  --type-args $MODULE::universal_coin::QVE \
+  --type-args $MODULE::coins::QVE \
   --profile testnet2
 # 코인 mint 모듈 owner만 가능하다
 aptos move run \
-  --function-id $MODULE::universal_coin::mint_coin \
-  --type-args $MODULE::universal_coin::QVE \
+  --function-id $MODULE::coins::mint_coin \
+  --type-args $MODULE::coins::QVE \
   --args address:0x3eac2782851d36044593da16801fe9ebef49a31e7d4ee35c1d6a238cc52596bd u64:100000000 \
   --profile testnet5
 
+
+# call pyth module
+aptos move run \
+  --function-id $MODULE::deposit_mint::get_btc_usd_price \
+  --args vector<vector<u8>>:x"44a93dddd8effa54ea51076c4e851b6cbbfd938e82eb90197de38fe8876bb66e" \
+  --profile testnet2
 
 
 # 계좌 resources 확인 100000000 -> '0' 8개가 하나다
@@ -118,7 +124,7 @@ aptos move run \
 # universal stable pool 생성하기 
 aptos move run \
   --function-id $MODULE::pool::create_stable_pool \
-  --type-args $MODULE::universal_coin::MQVE $MODULE::universal_coin::USDC \
+  --type-args $MODULE::coins::MQVE $MODULE::coins::USDC \
   --profile testnet4
 
 # universal create pool
@@ -145,6 +151,17 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{
   "function": "dbd4b1742ac096bc8b881a6837842692d46b932754f82f8d9ebd0b908534bee4::qve_usdf_pool::get_reserve",
+  "type_arguments": [],
+  "arguments": []
+}' | jq .
+
+
+# pyth 정보 가져오기
+curl --request POST \
+  --url https://fullnode.testnet.aptoslabs.com/v1/view \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "function": "e077daafd2d520128ef39d770271b0d0b98f565d1e5eb82c068bc8a985d2bb48::deposit_mint::get_aptos_price",
   "type_arguments": [],
   "arguments": []
 }' | jq .
