@@ -12,7 +12,7 @@ module qve_protocol::example {
     use aptos_framework::aptos_coin::AptosCoin;
     use aptos_framework::coin;
 
-    use qve_protocol::usdf::USDF;
+    use qve_protocol::coins::USDF;
 
     public entry fun create_stable_pool(account: &signer) {
         // Check generics sorted.
