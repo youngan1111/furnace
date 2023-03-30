@@ -3,48 +3,19 @@ module qve_protocol::deposit_mint {
     use std::string::utf8;
     use std::vector;
     
-    use qve_protocol::coins::{QVE, MQVE, AQVE, USDC, USDT};
+    use qve_protocol::coins::{Self, QVE, MQVE, AQVE, USDC, USDT};
 
     use pyth::pyth;
-    use pyth::price::Price;
     use pyth::price_identifier;
+    use pyth::i64;
+    use pyth::price::{Self,Price};
+
     use aptos_framework::coin;
     use aptos_framework::aptos_coin;
+    use aptos_std::math64::pow;
 
-    // public fun deposit_to_market_account<CoinType>(
-    //     owner: &signer,
-    //     accountKey: MarketAccountKey,
-    //     coinIAmt: u64, // Fixedpoint value.
-    //     coinQAmt: u64, // Fixedpoint value.
-    // ) acquires FerumInfo, Orderbook {
-    //     let marketAddr = get_market_addr<I, Q>();
-    //     let book = borrow_global_mut<Orderbook<I, Q>>(marketAddr);
-    //     assert!(table::contains(&book.marketAccounts, accountKey), ERR_NO_MARKET_ACCOUNT);
-    //     let marketAcc = table::borrow_mut(&mut book.marketAccounts, accountKey);
-    //     assert!(owns_account(owner, &accountKey, marketAcc), ERR_NOT_OWNER);
-    //     if (coinIAmt > 0) {
-    //         let coinIDecimals = coin::decimals<I>();
-    //         let coinAmt = coin::withdraw<I>(owner, fp_convert(coinIAmt, coinIDecimals, 1 /* FP_NO_PRECISION_LOSS */));
-    //         coin::merge(&mut marketAcc.instrumentBalance, coinAmt);
-    //     };
-    //     if (coinQAmt > 0) {
-    //         let coinQDecimals = coin::decimals<Q>();
-    //         let coinAmt = coin::withdraw<Q>(owner, fp_convert(coinQAmt, coinQDecimals, 1 /* FP_NO_PRECISION_LOSS */));
-    //         coin::merge(&mut marketAcc.quoteBalance, coinAmt);
-    //     };
-    // }
-
-    // const APTOS_USD_PRICE_FEED_IDENTIFIER : vector<u8> = x"44a93dddd8effa54ea51076c4e851b6cbbfd938e82eb90197de38fe8876bb66e";
-
-    // public entry fun deposit_to_mm_account_entry<CoinType>(
-    //     from: &signer,
-    //     amount: u64,
-    // ) {
-    //     if (amount > 0) {
-    //         let coins = coin::withdraw<CoinType>(from, amount);
-    //         coin::deposit<CoinType>(@qve_protocol, coins);
-    //     };
-    // }
+    const APTOS_USD_PRICE_FEED_IDENTIFIER : vector<u8> = x"44a93dddd8effa54ea51076c4e851b6cbbfd938e82eb90197de38fe8876bb66e";
+    const OCTAS_PER_APTOS: u64 = 100000000;
 
     public entry fun get_btc_usd_price(user: &signer, pyth_update_data: vector<vector<u8>>) {
         // First update the Pyth price feeds
@@ -56,27 +27,34 @@ module qve_protocol::deposit_mint {
 
         // Now we can use the prices which we have just updated
         let btc_usd_price_id = price_identifier::from_byte_vec(btc_price_identifier);
-        pyth::get_price(btc_usd_price_id)
+        let temp = pyth::get_price(btc_usd_price_id);
+        std::debug::print(&temp)
     }
 
-    // fun update_and_fetch_price(receiver : &signer,  vaas : vector<vector<u8>>) : Price {
-    //     let coins = coin::withdraw<aptos_coin::AptosCoin>(receiver, pyth::get_update_fee(&vaas)); // Get coins to pay for the update
-    //     pyth::update_price_feeds(vaas, coins); // Update price feed with the provided vaas
-    //     pyth::get_price(price_identifier::from_byte_vec(APTOS_USD_PRICE_FEED_IDENTIFIER)) // Get recent price (will fail if price is too old)
-    // }
+    public entry fun deposit_apt_get_mint<CoinType>(
+        from: &signer,
+        amount: u64,
+        pyth_update_data: vector<vector<u8>>
+    ) {
+        if (amount > 0) {
+            let coins = coin::withdraw<aptos_coin::AptosCoin>(from, amount);
+            coin::deposit(@qve_protocol, coins);
 
-    // #[view]
-    // public fun get_aptos_price(receiver : &signer): Price {
-    //     let coins = coin::withdraw<aptos_coin::AptosCoin>(receiver, pyth::get_update_fee()); // Get coins to pay for the update
-    //     pyth::update_price_feeds(APTOS_USD_PRICE_FEED_IDENTIFIER, coins); // Update price feed with the provided VAA
+            let price = update_and_fetch_price(from, pyth_update_data);
+            let price_positive = i64::get_magnitude_if_positive(&price::get_price(&price)); // This will fail if the price is negative
+            let expo_magnitude = i64::get_magnitude_if_negative(&price::get_expo(&price)); // This will fail if the exponent is positive
+            let price_in_aptos_coin =  (OCTAS_PER_APTOS * pow(10, expo_magnitude)) / price_positive; // 1 USD in APT
 
-    //     // Price Feed Identifier of APT/USD in Testnet
-    //     let btc_price_identifier = x"44a93dddd8effa54ea51076c4e851b6cbbfd938e82eb90197de38fe8876bb66e";
+            // mint and deposit
+            coins::mint_coin<CoinType>(from, price_in_aptos_coin);
+        };
+    }
 
-    //     // Now we can use the prices which we have just updated
-    //     let btc_usd_price_id = price_identifier::from_byte_vec(btc_price_identifier);
-    //     pyth::get_price(btc_usd_price_id)
-    // }
+    fun update_and_fetch_price(receiver : &signer,  vaas : vector<vector<u8>>) : Price {
+        let coins = coin::withdraw<aptos_coin::AptosCoin>(receiver, pyth::get_update_fee(&vaas)); // Get coins to pay for the update
+        pyth::update_price_feeds(vaas, coins); // Update price feed with the provided vaas
+        pyth::get_price(price_identifier::from_byte_vec(APTOS_USD_PRICE_FEED_IDENTIFIER)) // Get recent price (will fail if price is too old)
+    }
 }
 
 
