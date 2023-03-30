@@ -1,85 +1,22 @@
-export set MODULE=0x7d6bcd5415b9968276b04654a8e286762bbf4f40fe66d9569b221e61d3021af0
+export set MODULE=0x98c572593f715bd814aef03711a5a5a1705b8eba67f1686a725502f55fc92bb9
 export set USER=0xb44a3ed8bff3901819a49dd22ebfa760e75561ba3b4e636639d1f74ffad7dea3
 export set PETRA=0xf763fe2af78283f67909c9424ecbda781e106011777e7b92561972f33edf0c3a
-
-# module 함수 실행
-aptos move run \
-  --function-id $MODULE::message::set_message \
-  --args 'string:this is test plz plz plz plz'
-
-
-
-# coin 만들기
-# 0. (한번만 실행하면됨) module owner 계정으로 fake coin 만들기
-aptos move run \
-  --function-id $MODULE::usdf::create_usdf \
-  --profile testnet4
-# 1. register the tokens with our account so we can receive it
-aptos move run \
-  --type-args $MODULE::usdf::USDF \
-  --function-id 0x1::managed_coin::register \
-  --profile testnet4
-# 2. 다른 아무 계정으로 fake coin minting 하기
-aptos move run \
-  --function-id $MODULE::usdf::mint_usdf \
-  --args u64:100000000000000 \
-  --profile testnet
-  
-# QVE minting
-# 0. (한번만 실행하면됨) module owner 계정으로 fake coin 만들기
-aptos move run \
-  --function-id $MODULE::qve::create_qve \
-  --profile testnet4
-# 1. register the tokens with our account so we can receive it
-aptos move run \
-  --type-args $MODULE::qve::QVE \
-  --function-id 0x1::managed_coin::register \
-  --profile testnet4
-# 2. 다른 아무 계정으로 fake coin minting 하기
-aptos move run \
-  --function-id $MODULE::qve::mint_qve \
-  --args u64:100000000000000 \
-  --profile testnet
-
-# mQVE minting
-# 0. (한번만 실행하면됨) module owner 계정으로 fake coin 만들기
-aptos move run \
-  --function-id $MODULE::qve::create_qve \
-  --profile testnet4
-# 1. register the tokens with our account so we can receive it
-aptos move run \
-  --function-id 0x1::managed_coin::register \
-  --type-args $MODULE::qve::QVE \
-  --profile testnet4
-# 2. 다른 아무 계정으로 fake coin minting 하기
-aptos move run \
-  --function-id $MODULE::qve::mint_qve \
-  --args u64:100000000000000 \
-  --profile testnet
 
 # 코인 한번에 register
 aptos move run \
   --function-id $MODULE::coins::register_coins \
-  --profile testnet5
+  --profile testnet
 # 코인 개별 유저 지갑에 등록 QVE, mQVE, aQVE, USDC, USDT
 aptos move run \
   --function-id 0x1::managed_coin::register \
-  --type-args $MODULE::coins::QVE \
-  --profile testnet2
-# 코인 mint 모듈 owner만 가능하다
+  --type-args $MODULE::coins::USDT \
+  --profile a
+# 코인 minting -> module owner만 target address에다가 minting을 해줄 수 있다.
 aptos move run \
-  --function-id $MODULE::coins::mint_coin \
-  --type-args $MODULE::coins::QVE \
-  --args address:0x3eac2782851d36044593da16801fe9ebef49a31e7d4ee35c1d6a238cc52596bd u64:100000000 \
-  --profile testnet5
-
-
-# call pyth module
-aptos move run \
-  --function-id $MODULE::deposit_mint::get_btc_usd_price \
-  --args vector<vector<u8>>:x"44a93dddd8effa54ea51076c4e851b6cbbfd938e82eb90197de38fe8876bb66e" \
-  --profile testnet2
-
+  --function-id $MODULE::coins::mint_coin_entry \
+  --type-args $MODULE::coins::USDT \
+  --args address:0x14d09d852039ffd8905f8cbf6d570652f43ca31db9e366ab1b50dcfbb4cf0cd2 u64:10000000000000 \
+  --profile testnet
 
 # 계좌 resources 확인 100000000 -> '0' 8개가 하나다
 curl --request GET \
@@ -102,44 +39,31 @@ aptos move run \
   --args u64:100000000 \
   --profile default
 
-# liquidswap 기존 풀을 활용한 apt -> btc | usdt swap function
-aptos move run \
-  --function-id $MODULE::example::test_btc \
-  --profile testnet1
-aptos move run \
-  --function-id $MODULE::example::test_usdt \
-  --profile testnet1
-
-
 
 
 
 
 # pool 생성하기
 
-# liquidswap create my qve_usdf_pool
-aptos move run \
-  --function-id $MODULE::qve_usdf_pool::create_pool \
-  --profile testnet4
-# universal stable pool 생성하기 
+# universal stable pool 생성하기 | Pool 생성전에 코인이 먼저 생성되어야함
 aptos move run \
   --function-id $MODULE::pool::create_stable_pool \
-  --type-args $MODULE::coins::MQVE $MODULE::coins::USDC \
-  --profile testnet4
-
-# universal create pool
-aptos move run \
-  --function-id $MODULE::pool::create_pool \
-  --type-args $MODULE::qve::QVE $MODULE::usdf::USDF \
-  --profile testnet4
+  --type-args $MODULE::coins::QVE $MODULE::coins::MQVE \
+  --profile testnet
 # add_liquidity to my pool
 aptos move run \
-  --function-id $MODULE::qve_usdf_pool::add_liquidity \
-  --profile testnet
-# swap qve -> usdf  
+  --function-id $MODULE::pool::add_liquidity_stable \
+  --type-args $MODULE::coins::QVE $MODULE::coins::MQVE \
+  --args u64:100000000 u64:1000000000 \
+  --profile a
+
+# swap qve => mqve
 aptos move run \
-  --function-id $MODULE::qve_usdf_pool::test_swap \
-  --profile testnet
+  --function-id $MODULE::pool::stable_swap \
+  --type-args $MODULE::coins::QVE $MODULE::coins::MQVE \
+  --args u64:100000000 \
+  --profile a
+
 # liquidswap burn lp token
 aptos move run \
   --function-id $MODULE::qve_usdf_pool::burn_liquidity \
@@ -150,10 +74,23 @@ curl --request POST \
   --url https://fullnode.testnet.aptoslabs.com/v1/view \
   --header 'Content-Type: application/json' \
   --data '{
-  "function": "dbd4b1742ac096bc8b881a6837842692d46b932754f82f8d9ebd0b908534bee4::qve_usdf_pool::get_reserve",
-  "type_arguments": [],
+  "function": "0x98c572593f715bd814aef03711a5a5a1705b8eba67f1686a725502f55fc92bb9::pool::get_reserve_stable",
+  "type_arguments": [
+    "0x98c572593f715bd814aef03711a5a5a1705b8eba67f1686a725502f55fc92bb9::coins::QVE",
+    "0x98c572593f715bd814aef03711a5a5a1705b8eba67f1686a725502f55fc92bb9::coins::MQVE"
+  ],
   "arguments": []
 }' | jq .
+
+# stake
+aptos move run \
+  --function-id $MODULE::coins::deposit_coin_entry \
+  --type-args $MODULE::coins::QVE \
+  --args u64:100000000 \
+  --profile a
+
+
+
 
 
 # pyth 정보 가져오기
@@ -179,9 +116,6 @@ curl --request POST \
   ]
 }' | jq .
 
-# get user config
-cat .aptos/config.yaml
-
 # get local module info
 curl --request GET \
   --url http://0.0.0.0:8080/v1/accounts/$MODULE/module/basic_coin \
@@ -190,7 +124,6 @@ curl --request GET \
 curl --request GET \
   --url https://fullnode.testnet.aptoslabs.com/v1/accounts/$MODULE/modules \
   --header 'Content-Type: application/json' | jq .
-
 # message module의 event 접근
 curl --request GET \
   --url http://0.0.0.0:8080/v1/accounts/$USER/events/$MODULE::message::MessageHolder/message_change_events | jq .
