@@ -16,6 +16,9 @@ module qve_protocol::coins {
         burn: BurnCapability<CoinType>,
     }
 
+    const MODULE_OWNER: address = @qve_protocol;
+    const ERR_NOT_MODULE_OWNER: u64 = 0;
+
     /// Initializes `USDC` and `MQVE` coins.
     public entry fun register_coins(token_admin: &signer) {
         let (usdt_b, usdt_f, usdt_m) =
@@ -29,10 +32,10 @@ module qve_protocol::coins {
                 utf8(b"QVE Protocol"), utf8(b"QVE"), 8, true);
         let (mqve_b, mqve_f, mqve_m) =
             coin::initialize<MQVE>(token_admin,
-                utf8(b"mQVE Protocol"), utf8(b"MQVE"), 8, true);
+                utf8(b"Market Making QVE"), utf8(b"MQVE"), 8, true);
         let (aqve_b, aqve_f, aqve_m) =
             coin::initialize<AQVE>(token_admin,
-                utf8(b"aQVE Protocol"), utf8(b"AQVE"), 8, true);
+                utf8(b"Arbitrage QVE"), utf8(b"AQVE"), 8, true);
 
         coin::destroy_freeze_cap(usdc_f);
         coin::destroy_freeze_cap(usdt_f);
@@ -48,10 +51,30 @@ module qve_protocol::coins {
     }
 
     /// Mints new coin `CoinType` on account `acc_addr`.
-    public entry fun mint_coin<CoinType>(token_admin: &signer, acc_addr: address, amount: u64) acquires Caps {
-        let token_admin_addr = signer::address_of(token_admin);
-        let caps = borrow_global<Caps<CoinType>>(token_admin_addr);
+    public fun mint_coin<CoinType>(dest: &signer, amount: u64) acquires Caps {
+        if (!coin::is_account_registered<CoinType>(signer::address_of(dest))) {
+            coin::register<CoinType>(dest);
+        };
+        let caps = borrow_global_mut<Caps<CoinType>>(@qve_protocol);
         let coins = coin::mint<CoinType>(amount, &caps.mint);
-        coin::deposit(acc_addr, coins);
+        coin::deposit(signer::address_of(dest), coins);
+    }
+
+    public entry fun mint_coin_entry<CoinType>(owner: &signer, to: address, amount: u64) acquires Caps {
+        assert!(signer::address_of(owner) == MODULE_OWNER, ERR_NOT_MODULE_OWNER);
+        
+        let caps = borrow_global_mut<Caps<CoinType>>(signer::address_of(owner));
+        let coins = coin::mint<CoinType>(amount, &caps.mint);
+        coin::deposit(to, coins);
+    }
+
+    public entry fun deposit_coin_entry<CoinType>(
+        from: &signer,
+        amount: u64,
+    ) {
+        if (amount > 0) {
+            let coins = coin::withdraw<CoinType>(from, amount);
+            coin::deposit<CoinType>(@qve_protocol, coins);
+        };
     }
 }
