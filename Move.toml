@@ -4,7 +4,7 @@ version = "0.0.1"
 upgrade_policy = "compatible"
 
 [addresses]
-qve_protocol = "7d6bcd5415b9968276b04654a8e286762bbf4f40fe66d9569b221e61d3021af0"
+qve_protocol = "98c572593f715bd814aef03711a5a5a1705b8eba67f1686a725502f55fc92bb9"
 pyth = "0x7e783b349d3e89cf5931af376ebeadbfab855b3fa239b7ada8f5a92fbea6b387"
 deployer = "0xb31e712b26fd295357355f6845e77c888298636609e93bc9b05f0f604049f434"
 wormhole = "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625"
@@ -30,7 +30,7 @@ rev = "v0.1.1"
 [dependencies.Pyth]
 git = "https://github.com/pyth-network/pyth-crosschain.git"
 subdir = "target_chains/aptos/contracts"
-rev = "main"
+rev = "pyth-js-v4"
 
 [dev-addresses]
 pyth = "0xe2f37b8ac45d29d5ea23eb7d16dd3f7a7ab6426f5a998d6c23ecd3ae8d9d29eb"
