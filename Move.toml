@@ -4,7 +4,7 @@ version = "0.0.1"
 upgrade_policy = "compatible"
 
 [addresses]
-qve_protocol = "98c572593f715bd814aef03711a5a5a1705b8eba67f1686a725502f55fc92bb9"
+qve_protocol = "dc21fac3fbcf71b5529a0853185140a11b1dee00aab4b8b521d00ddd19db5051"
 pyth = "0x7e783b349d3e89cf5931af376ebeadbfab855b3fa239b7ada8f5a92fbea6b387"
 deployer = "0xb31e712b26fd295357355f6845e77c888298636609e93bc9b05f0f604049f434"
 wormhole = "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625"
@@ -22,10 +22,6 @@ rev = "v0.4.4"
 git = 'https://github.com/pontem-network/liquidswap.git'
 subdir = 'liquidswap_lp/'
 rev = "v0.4.4"
-
-[dependencies.TestCoins]
-git = 'https://github.com/pontem-network/test-coins.git'
-rev = "v0.1.1"
 
 [dependencies.Pyth]
 git = "https://github.com/pyth-network/pyth-crosschain.git"
