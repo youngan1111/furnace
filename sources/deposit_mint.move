@@ -17,20 +17,6 @@ module qve_protocol::deposit_mint {
     const APTOS_USD_PRICE_FEED_IDENTIFIER : vector<u8> = x"44a93dddd8effa54ea51076c4e851b6cbbfd938e82eb90197de38fe8876bb66e";
     const OCTAS_PER_APTOS: u64 = 100000000;
 
-    public entry fun get_btc_usd_price(user: &signer, pyth_update_data: vector<vector<u8>>) {
-        // First update the Pyth price feeds
-        let coins = coin::withdraw(user, pyth::get_update_fee(&pyth_update_data));
-        pyth::update_price_feeds(pyth_update_data, coins);
-
-        // Price Feed Identifier of APT/USD in Testnet
-        let btc_price_identifier = x"44a93dddd8effa54ea51076c4e851b6cbbfd938e82eb90197de38fe8876bb66e";
-
-        // Now we can use the prices which we have just updated
-        let btc_usd_price_id = price_identifier::from_byte_vec(btc_price_identifier);
-        let temp = pyth::get_price(btc_usd_price_id);
-        std::debug::print(&temp)
-    }
-
     public entry fun deposit_apt_get_mint<CoinType>(
         from: &signer,
         amount: u64,
@@ -47,6 +33,33 @@ module qve_protocol::deposit_mint {
 
             // mint and deposit
             coins::mint_coin<CoinType>(from, price_in_aptos_coin);
+        };
+    }
+
+    public entry fun deposit_apt_then_get_mint<CoinType>(
+        from: &signer,
+        amount: u64,
+    ) {
+        if (amount > 0) {
+            let coins = coin::withdraw<aptos_coin::AptosCoin>(from, amount);
+            coin::deposit(@qve_protocol, coins);
+
+            let price_in_aptos_coin =  (111700000 * amount) / 10000000; // 11.17 USD in APT
+            // mint and deposit
+            coins::mint_coin<CoinType>(from, price_in_aptos_coin);
+        };
+    }
+
+    public entry fun deposit_usd_then_get_mint<CoinType>(
+        from: &signer,
+        amount: u64,
+    ) {
+        if (amount > 0) {
+            let coins = coin::withdraw<aptos_coin::AptosCoin>(from, amount);
+            coin::deposit(@qve_protocol, coins);
+
+            // mint and deposit
+            coins::mint_coin<CoinType>(from, amount);
         };
     }
 
