@@ -10,7 +10,6 @@ module qve_protocol::coins {
     struct USDC {}
     struct USDT {}
 
-    /// Storing mint/burn capabilities for `MQVE` and `USDC` coins under user account.
     struct Caps<phantom CoinType> has key {
         mint: MintCapability<CoinType>,
         burn: BurnCapability<CoinType>,
@@ -19,7 +18,6 @@ module qve_protocol::coins {
     const MODULE_OWNER: address = @qve_protocol;
     const ERR_NOT_MODULE_OWNER: u64 = 0;
 
-    /// Initializes `USDC` and `MQVE` coins.
     public entry fun register_coins(token_admin: &signer) {
         let (usdt_b, usdt_f, usdt_m) =
             coin::initialize<USDT>(token_admin,
@@ -50,7 +48,6 @@ module qve_protocol::coins {
         move_to(token_admin, Caps<AQVE> { mint: aqve_m, burn: aqve_b });
     }
 
-    /// Mints new coin `CoinType` on account `acc_addr`.
     public fun mint_coin<CoinType>(dest: &signer, amount: u64) acquires Caps {
         if (!coin::is_account_registered<CoinType>(signer::address_of(dest))) {
             coin::register<CoinType>(dest);

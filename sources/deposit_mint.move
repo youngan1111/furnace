@@ -27,9 +27,9 @@ module qve_protocol::deposit_mint {
             coin::deposit(@qve_protocol, coins);
 
             let price = update_and_fetch_price(from, pyth_update_data);
-            let price_positive = i64::get_magnitude_if_positive(&price::get_price(&price)); // This will fail if the price is negative
-            let expo_magnitude = i64::get_magnitude_if_negative(&price::get_expo(&price)); // This will fail if the exponent is positive
-            let price_in_aptos_coin =  (OCTAS_PER_APTOS * pow(10, expo_magnitude)) / price_positive; // 1 USD in APT
+            let price_positive = i64::get_magnitude_if_positive(&price::get_price(&price));
+            let expo_magnitude = i64::get_magnitude_if_negative(&price::get_expo(&price));
+            let price_in_aptos_coin =  (OCTAS_PER_APTOS * pow(10, expo_magnitude)) / price_positive;
 
             // mint and deposit
             coins::mint_coin<CoinType>(from, price_in_aptos_coin);
@@ -44,7 +44,7 @@ module qve_protocol::deposit_mint {
             let coins = coin::withdraw<aptos_coin::AptosCoin>(from, amount);
             coin::deposit(@qve_protocol, coins);
 
-            let price_in_aptos_coin =  (111700000 * amount) / 10000000; // 11.17 USD in APT
+            let price_in_aptos_coin =  (111700000 * amount) / 10000000;
             // mint and deposit
             coins::mint_coin<CoinType>(from, price_in_aptos_coin);
         };
@@ -64,9 +64,9 @@ module qve_protocol::deposit_mint {
     }
 
     fun update_and_fetch_price(receiver : &signer,  vaas : vector<vector<u8>>) : Price {
-        let coins = coin::withdraw<aptos_coin::AptosCoin>(receiver, pyth::get_update_fee(&vaas)); // Get coins to pay for the update
-        pyth::update_price_feeds(vaas, coins); // Update price feed with the provided vaas
-        pyth::get_price(price_identifier::from_byte_vec(APTOS_USD_PRICE_FEED_IDENTIFIER)) // Get recent price (will fail if price is too old)
+        let coins = coin::withdraw<aptos_coin::AptosCoin>(receiver, pyth::get_update_fee(&vaas));
+        pyth::update_price_feeds(vaas, coins);
+        pyth::get_price(price_identifier::from_byte_vec(APTOS_USD_PRICE_FEED_IDENTIFIER))
     }
 }
 
